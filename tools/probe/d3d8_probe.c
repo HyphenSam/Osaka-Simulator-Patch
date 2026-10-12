@@ -1,6 +1,7 @@
 // Diagnostic d3d8.dll proxy: logs device setup, frame rate, Present cost and the game's timer fields.
 // Build: zig cc -target x86-windows-gnu -O2 -shared -o d3d8.dll d3d8_probe.c d3d8.def -lwinmm
 // Put it next to tsu_han.exe; it writes probe.log. Remove it for normal play.
+// PROBE_RGN=none|rect|layered (environment variable) changes what happens to the shaped window's region.
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdio.h>
@@ -176,6 +177,32 @@ static BOOL WINAPI hook_gvx(OSVERSIONINFOA *vi)
     return r;
 }
 
+// PROBE_RGN=none|rect|layered changes what happens to the game's window region (shaped window mode).
+static int (WINAPI *real_swr)(HWND, HRGN, BOOL);
+static int WINAPI hook_swr(HWND hwnd, HRGN rgn, BOOL redraw)
+{
+    static int calls;
+    char mode[16] = "";
+    GetEnvironmentVariableA("PROBE_RGN", mode, sizeof mode);
+    DWORD size = rgn ? GetRegionData(rgn, 0, NULL) : 0;
+    RECT box = { 0 };
+    if (rgn) GetRgnBox(rgn, &box);
+    calls++;
+    if (calls <= 20)
+        logp("SetWindowRgn #%d hwnd=%p rects=%lu box=%ld,%ld-%ld,%ld mode=%s (caller %p)\n", calls, hwnd,
+             size ? (size - sizeof(RGNDATAHEADER)) / sizeof(RECT) : 0, box.left, box.top, box.right, box.bottom, mode,
+             __builtin_return_address(0));
+    if (rgn && !strcmp(mode, "none")) { DeleteObject(rgn); return 1; }
+    if (rgn && !strcmp(mode, "rect")) { DeleteObject(rgn); rgn = CreateRectRgn(box.left, box.top, box.right, box.bottom - 1); }
+    if (rgn && !strcmp(mode, "layered")) {
+        DeleteObject(rgn);
+        SetWindowLongA(hwnd, GWL_EXSTYLE, GetWindowLongA(hwnd, GWL_EXSTYLE) | WS_EX_LAYERED);
+        SetLayeredWindowAttributes(hwnd, RGB(255, 0, 255), 0, LWA_COLORKEY);
+        return 1;
+    }
+    return real_swr(hwnd, rgn, redraw);
+}
+
 static HRESULT STDMETHODCALLTYPE hook_get_caps(IDirect3D8 *d3d, UINT adapter, D3DDEVTYPE type, D3DCAPS8 *caps)
 {
     HRESULT hr = real_get_caps(d3d, adapter, type, caps);
@@ -204,6 +231,15 @@ static HRESULT STDMETHODCALLTYPE hook_create_device(IDirect3D8 *d3d, UINT adapte
     return hr;
 }
 
+BOOL WINAPI DllMain(HINSTANCE inst, DWORD reason, LPVOID reserved)
+{
+    if (reason == DLL_PROCESS_ATTACH) {
+        logf = fopen("probe.log", "w");
+        hook_iat("USER32.dll", "SetWindowRgn", hook_swr, (void **)&real_swr);
+    }
+    return TRUE;
+}
+
 IDirect3D8 *WINAPI Direct3DCreate8(UINT sdk)
 {
     if (!real_d3d8) {
@@ -212,7 +248,6 @@ IDirect3D8 *WINAPI Direct3DCreate8(UINT sdk)
         strcat(path, "\\d3d8.dll");
         real_d3d8 = LoadLibraryA(path);
         real_create = (void *)GetProcAddress(real_d3d8, "Direct3DCreate8");
-        logf = fopen("probe.log", "w");
         hook_iat("KERNEL32.dll", "Sleep", hook_sleep, (void **)&real_sleep);
         hook_iat("KERNEL32.dll", "GetVersionExA", hook_gvx, (void **)&real_gvx);
         OSVERSIONINFOA vi = { sizeof vi };

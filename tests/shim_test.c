@@ -1,7 +1,7 @@
-// Runs the assembled unicode_shim at its real address (0x4E25A0) with fake import
+// Runs the assembled shim at its real address (0x4E25A0) with fake import
 // table entries, and checks what reaches the Unicode APIs.
 // Build: zig cc -target x86-windows-gnu -O1 shim_test.c -o shim_test.exe -Wl,--image-base=0x10000000
-// Usage: shim_test.exe unicode_shim.bin  (made by build_shim.py)
+// Usage: shim_test.exe shim.bin  (made by build_shim.py)
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <stdio.h>
@@ -57,7 +57,7 @@ static void check(int ok, const char *what)
 
 int main(int argc, char **argv)
 {
-    FILE *f = fopen(argc > 1 ? argv[1] : "unicode_shim.bin", "rb");
+    FILE *f = fopen(argc > 1 ? argv[1] : "shim.bin", "rb");
     if (!f) { puts("cannot open shim"); return 2; }
     BYTE shim[4096];
     size_t n = fread(shim, 1, sizeof shim, f);
@@ -73,7 +73,7 @@ int main(int argc, char **argv)
             STARTUPINFOA si = { sizeof si };
             PROCESS_INFORMATION pi;
             DWORD code = 2;
-            snprintf(cmd, sizeof cmd, "\"%s\" \"%s\" retry", argv[0], argc > 1 ? argv[1] : "unicode_shim.bin");
+            snprintf(cmd, sizeof cmd, "\"%s\" \"%s\" retry", argv[0], argc > 1 ? argv[1] : "shim.bin");
             if (!CreateProcessA(NULL, cmd, NULL, NULL, FALSE, 0, NULL, NULL, &si, &pi)) break;
             WaitForSingleObject(pi.hProcess, INFINITE);
             GetExitCodeProcess(pi.hProcess, &code);
@@ -93,7 +93,7 @@ int main(int argc, char **argv)
     IAT(0x4E3450) = (void *)fake_cwa;
     IAT(0x4E3534) = (void *)fake_msgboxa;
 
-    DWORD *entries = (DWORD *)(shim + n - 12);
+    DWORD *entries = (DWORD *)(shim + n - 20);  // entry table: last 5 DWORDs of shim.bin
     HWND (WINAPI *cwx)(DWORD, LPCSTR, LPCSTR, DWORD, int, int, int, int, HWND, HMENU, HINSTANCE, LPVOID) =
         (void *)(SHIM_VA + entries[0]);
     BOOL (WINAPI *swt)(HWND, LPCSTR) = (void *)(SHIM_VA + entries[1]);
