@@ -1,0 +1,11 @@
+# Game files and build output: the patched exe goes in GitHub Releases, not the repo
+*.exe
+*.dll
+*.pdb
+*.lib
+*.o
+*.bin
+dist/
+probe.log
+probe_vs*.vso
+__pycache__/
