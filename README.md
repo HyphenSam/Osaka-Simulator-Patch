@@ -15,7 +15,7 @@ Your existing save (`tsu_han.dat`) and settings (`tsu_han.cfg`) keep working as 
 
 ## Installing (Windows)
 
-1. Download the original game on [Internet Archive](https://archive.org/details/osakasimulator) or [My Abandonware](https://www.myabandonware.com/game/ayumu-kasuga-s-mail-order-life-voj) (patch has been tested on the Internet Archive version).
+1. Get the original game from the [Internet Archive](https://archive.org/details/osakasimulator) or [My Abandonware](https://www.myabandonware.com/game/ayumu-kasuga-s-mail-order-life-voj). The patch has been tested on the Internet Archive version.
 2. Download `tsu_han.exe` from the [Releases](../../releases) page.
 3. (Optional) Download the `tsu_han.dat` save file containing all items owned, and ending achieved.
 4. Open the folder where the game is installed. It contains `tsu_han.exe` and the folders `animation`, `model` and `sound`.
