@@ -1,5 +1,5 @@
 // Diagnostic d3d8.dll proxy: logs device setup, frame rate, Present cost and the game's timer fields.
-// Build: zig cc -target x86-windows-gnu -O2 -shared -o d3d8.dll d3d8_probe.c d3d8.def -lwinmm
+// Build: zig cc -target x86-windows-gnu -O2 -shared -o d3d8.dll d3d8_probe.c d3d8.def -lwinmm -lgdi32 -luser32
 // Put it next to tsu_han.exe; it writes probe.log. Remove it for normal play.
 // PROBE_RGN=none|rect|layered (environment variable) changes what happens to the shaped window's region.
 #define WIN32_LEAN_AND_MEAN
