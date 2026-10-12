@@ -1,4 +1,4 @@
-# Osaka Simulator fix
+# Osaka Simulator Patch
 
 A patch for **春日歩の通販生活** (*Ayumu Kasuga's Mail Order Life*, better known as *Osaka Simulator*), the free 2004 Azumanga Daioh desktop game. It makes the game run properly on modern Windows, and on Linux and macOS through Wine. No virtual machine or compatibility mode is needed.
 
