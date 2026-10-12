@@ -84,6 +84,8 @@ How these were found:
 - **Shaped window.** With the probe swapping the game's region at runtime: the real bubble (742 rectangles) gave a 27 ms `Present`, a single-rectangle region 0.36 ms, and a colour-keyed layered window about 3 ms.
 - **Blue hair.** It reproduced in 15–20% of screenshots. It never appeared once heap allocations were zero-filled, filled with junk, or never reused ([`tools/heap_test`](tools/heap_test)), nor with Windows' `FaultTolerantHeap` shim. A pass-through control still showed it. That combination points at reads of uninitialised memory rather than use-after-free.
 
+[`tools/testing`](tools/testing) holds the scripts used for these runs: a launcher with screenshots, a blue-hair frame counter, a screen grabber, and a reader for Windows' compatibility database.
+
 ## Building and testing the shim
 
 You need GNU binutils that can assemble 32-bit x86 (for example MinGW-w64), and any 32-bit Windows C compiler (`i686-w64-mingw32-gcc`, or `zig cc -target x86-windows-gnu`).
