@@ -7,7 +7,7 @@ A patch for **春日歩の通販生活** (*Ayumu Kasuga's Mail Order Life*, bett
 | Problem | Cause | Fix |
 |---|---|---|
 | The game runs far too fast (often 5–20×). | The frame timer stores "milliseconds since the PC booted" in a 32-bit float. After about 4.6 hours of uptime the float loses precision, the 60 fps limiter misfires, and the game renders hundreds of frames per second. Windows' Fast Startup means uptime rarely resets, even across shutdowns. | The timer uses whole milliseconds instead. The 60 fps cap also applies in fullscreen, which originally relied on vsync and ran too fast on 120/144 Hz monitors. |
-| Osaka's hair turns solid blue or disappears, and her skin looks grey. | The game reads memory it never initialised. Old Windows heaps usually handed out clean memory; modern ones don't. | The game's memory allocator zero-fills new allocations. |
+| Osaka's hair turns solid blue or disappears, and certain models are invisible. | The game reads memory it never initialised. Old Windows heaps usually handed out clean memory; modern ones don't. | The game's memory allocator zero-fills new allocations. |
 | The window title is garbled (`t“ú•à‚Ì’Ê”Ì¶Šˆ`). | Japanese (Shift-JIS) text is passed to Windows' legacy text functions, which decode it with your system language. | The title and error messages are converted and shown in proper Japanese: 春日歩の通販生活. |
 | The speech-bubble window (WindowMode 0) runs at about 35 fps. | The bubble is a window region of over 700 rectangles. Direct3D's `Present` into a window with such a region takes about 27 ms per frame on Windows, and was slow on Windows XP too. | On Windows 8 and later, the bubble is cut out by the desktop compositor instead: the window becomes a colour-keyed layered window, and the area outside the bubble is filled with the key colour before each frame is shown. It now runs at 60 fps. |
 
@@ -15,12 +15,14 @@ Your existing save (`tsu_han.dat`) and settings (`tsu_han.cfg`) keep working as 
 
 ## Installing (Windows)
 
-1. Download `tsu_han.exe` from the [Releases](../../releases) page.
-2. Open the folder where the game is installed. It contains `tsu_han.exe` and the folders `animation`, `model` and `sound`.
-3. Rename the original `tsu_han.exe` to `tsu_han_original.exe`, so you can go back if needed.
-4. Copy the downloaded `tsu_han.exe` into the folder.
-5. If you previously turned on compatibility mode for the game, turn it off: right-click `tsu_han.exe` → **Properties** → **Compatibility** → untick **Run this program in compatibility mode**. The patched game doesn't need it.
-6. Run `tsu_han.exe`.
+1. Download the original game on [Internet Archive](https://archive.org/details/osakasimulator) or [My Abandonware](https://www.myabandonware.com/game/ayumu-kasuga-s-mail-order-life-voj) (patch has been tested on the Internet Archive version).
+2. Download `tsu_han.exe` from the [Releases](../../releases) page.
+3. (Optional) Download the `tsu_han.dat` save file containing all items owned, and ending achieved.
+4. Open the folder where the game is installed. It contains `tsu_han.exe` and the folders `animation`, `model` and `sound`.
+5. Rename the original `tsu_han.exe` to `tsu_han_original.exe`, so you can go back if needed.
+6. Copy the downloaded `tsu_han.exe` into the folder. Optionally also copy the downloaded `tsu_han.dat` save file.
+7. If you previously turned on compatibility mode for the game, turn it off: right-click `tsu_han.exe` → **Properties** → **Compatibility** → untick **Run this program in compatibility mode**. The patched game doesn't need it.
+8. Run `tsu_han.exe`.
 
 ## Installing (Linux)
 
